@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include <unistd.h>
 int get(const char* ip_addr, int port_num, const char* data){
 	int socket_desc = socket(AF_INET , SOCK_STREAM , 0);
 	if ( socket_desc == -1){
@@ -22,13 +23,21 @@ int get(const char* ip_addr, int port_num, const char* data){
 	}
 	puts("Connected");
 	char* message = (char*)malloc(60);
-	snprintf(message, 60, "GET /%s HTTP/1.1", data);
+	snprintf(message, 60, "GET /%s HTTP/1.1\r\n\r\n", data);
 	if( send(socket_desc , message , strlen(message) , 0) < 0)
 	{
-		puts("Send failed");
+		puts("Request failed");
 		return 1;
 	}
-	puts("Data Send\n");
+	puts(message);
+	puts("Request Sent\n");
+	char server_reply[2000];
+	if( recv(socket_desc, server_reply, 2000, 0) < 0 ){
+		puts("Response failed");
+	}
+	puts("Response received!");
+	puts(server_reply);
+	close(socket_desc);
 	return 0;
 }
 
